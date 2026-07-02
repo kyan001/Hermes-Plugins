@@ -1,5 +1,7 @@
 # Holographic-CHS (AIGC)
 
+**English** | [中文](README.zh-CN.md)
+
 Chinese trigram FTS5 for [Hermes Agent](https://hermes-agent.nousresearch.com) memory. Drops in as a memory provider plugin.
 
 ## Quick Install
@@ -29,11 +31,12 @@ Without this plugin, a query like `冰黑咖啡` returns zero results against a 
 
 ## Search Strategy
 
-Three-phase fallback for maximum recall:
+Two-phase fallback for maximum recall:
 
 1. **FTS5 AND (default)** — exact trigram match
 2. **Trigram OR expansion** — retry with OR-joined trigrams when FTS5 returns empty (≥4 char queries only). Multi-word stop words (509 entries) stripped before expansion to reduce noise
-3. **LIKE fallback** — SQL `LIKE '%query%'` with category filter when both FTS5 passes return nothing
+
+> **Known limitation**: The trigram tokenizer requires at least 3 characters to produce index entries. Queries shorter than 3 characters (e.g. `咖啡`, `北京`) will not match any FTS5 rows. A LIKE fallback is intentionally omitted — single-character searches yield too much noise to be useful, and 2-character queries are rare in real-world agent usage.
 
 ## Files
 

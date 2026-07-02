@@ -12,6 +12,8 @@ from plugins.memory.holographic import HolographicMemoryProvider
 
 logger = logging.getLogger(__name__)
 
+_patches_applied = False
+
 
 def _patch_store():
     """Patch MemoryStore's internal schema for trigram FTS5."""
@@ -23,6 +25,7 @@ def _patch_store():
     if old in store_mod._SCHEMA:
         # Fast path: exact match
         store_mod._SCHEMA = store_mod._SCHEMA.replace(old, new, 1)
+        logger.debug("holographic-chs: trigram tokenizer injected into schema (exact match)")
     elif 'tokenize' not in store_mod._SCHEMA:
         # Fallback: regex tolerant of whitespace changes
         new_schema, n = re.subn(
@@ -33,8 +36,14 @@ def _patch_store():
         )
         if n == 1:
             store_mod._SCHEMA = new_schema
+            logger.debug("holographic-chs: trigram tokenizer injected into schema (regex fallback)")
         else:
-            logger.warning("holographic-chs: cannot inject trigram tokenizer into schema")
+            logger.warning(
+                "holographic-chs: cannot inject trigram tokenizer — "
+                "schema format unexpected. Chinese FTS5 recall will not improve."
+            )
+    else:
+        logger.debug("holographic-chs: schema already contains tokenize directive — skipping")
 
     # 2) Wrap _init_db on the actual class
     original_init = store_mod.MemoryStore._init_db
@@ -166,7 +175,9 @@ def _strip_stop(s: str) -> str:
     2. Single-char stop chars (set membership)
     """
     s = _MULTI_STOP_RE.sub('', s)
-    return ''.join(c for c in s if c not in _CHINESE_STOP_CHARS)
+    if _CHINESE_STOP_CHARS:
+        s = ''.join(c for c in s if c not in _CHINESE_STOP_CHARS)
+    return s
 
 
 def _trigram_or_query(s: str) -> str:
@@ -180,59 +191,36 @@ def _trigram_or_query(s: str) -> str:
     return ' OR '.join(f'"{t}"' for t in trigrams)
 
 
-def _like_fallback(retriever, raw: str, category, min_trust, limit) -> list:
-    """Run LIKE fallback; returns [] on failure."""
-    if len(raw) < 2:
-        return []
-    try:
-        sql = (
-            "SELECT f.*, 0.0 as fts_rank_raw "
-            "FROM facts f "
-            "WHERE f.content LIKE ? "
-            "  AND f.trust_score >= ?"
-        )
-        params = [f'%{raw}%', min_trust]
-        if category:
-            sql += " AND f.category = ?"
-            params.append(category)
-        sql += " ORDER BY f.trust_score DESC LIMIT ?"
-        params.append(limit)
-
-        rows = retriever.store._conn.execute(sql, params).fetchall()
-        if not rows:
-            return []
-        max_rank = max(1e-6, float(len(rows)))
-        results = []
-        for row in rows:
-            fact = dict(row)
-            fact["fts_rank_raw"] = 0.0
-            fact["fts_rank"] = 1.0 / max_rank
-            results.append(fact)
-        return results
-    except Exception:
-        return []
+# ── Retrieval patch — two-phase search ────────────────────────────
 
 
-# ── Retrieval patch ───────────────────────────────────────────────────
+def _patch_retrieval():
+    """Patch FactRetriever._fts_candidates: trigram AND + OR expansion.
 
-
-def _patch_retrieval(retriever):
-    """Patch FactRetriever._fts_candidates: trigram OR expansion + LIKE."""
+    Two phases, no LIKE fallback — FTS5 handles all query lengths natively
+    via trigram tokenizer (exact + prefix match).
+    """
     import plugins.memory.holographic.retrieval as ret_mod
 
     original_fts = ret_mod.FactRetriever._fts_candidates
 
     def _patched_fts(self, query, category, min_trust, limit):
-        # Phase 1: FTS5 trigram — query as-is (AND semantics)
+        # Phase 1: FTS5 trigram — query as-is (AND semantics).
+        #   - 1-3 chars → exact trigram or prefix match
+        #   - 4+ chars → AND-joined trigrams (strictest recall, lowest noise)
         try:
             results = original_fts(self, query, category, min_trust, limit)
         except Exception:
+            logger.warning(
+                "holographic-chs: Phase 1 (FTS5 AND) failed for query %r",
+                query, exc_info=True,
+            )
             results = []
 
-        # Phase 2: If empty and 4+ chars, strip stop words + trigram OR expansion
-        # Stop-word stripping removes function words so the remaining trigrams
-        # are content-bearing, reducing OR noise while still fixing the "冰黑咖啡"
-        # → "冰的黑咖啡" recall gap.
+        # Phase 2: If Phase 1 returned empty and query is 4+ chars,
+        # strip function words and retry with OR-joined trigrams.
+        # This fixes the "冰的黑咖啡" → search "冰黑咖啡" recall gap without
+        # resorting to substring matching.
         if not results and len(query) >= 4:
             stripped = _strip_stop(query)
             if len(stripped) >= 4:
@@ -245,13 +233,11 @@ def _patch_retrieval(retriever):
                         self, or_query, category, min_trust, limit
                     )
                 except Exception:
+                    logger.warning(
+                        "holographic-chs: Phase 2 (trigram OR) failed for query %r",
+                        or_query, exc_info=True,
+                    )
                     results = []
-
-        # Phase 3: LIKE fallback when FTS5 returns nothing
-        if not results:
-            like_raw = query.strip('"')
-            results = _like_fallback(self, like_raw, category,
-                                     min_trust, limit)
 
         return results
 
@@ -269,11 +255,15 @@ class CustomHolographicProvider(HolographicMemoryProvider):
         return "holographic-chs"
 
     def initialize(self, session_id: str, **kwargs) -> None:
-        # Patch must happen BEFORE super().initialize() so _init_db
-        # picks up the trigram schema when MemoryStore creates the DB.
-        _patch_store()
+        global _patches_applied
+        if not _patches_applied:
+            # Patch must happen BEFORE super().initialize() so _init_db
+            # picks up the trigram schema when MemoryStore creates the DB.
+            _patch_store()
+            _patch_retrieval()
+            _patches_applied = True
+
         super().initialize(session_id, **kwargs)
-        _patch_retrieval(self._retriever)
         logger.info("holographic-chs: initialized (trigram patched)")
 
 
@@ -287,13 +277,20 @@ def register(ctx: Any) -> None:
 
 
 def _load_plugin_config() -> dict:
-    from hermes_constants import get_hermes_home
+    try:
+        from hermes_constants import get_hermes_home
+    except ImportError:
+        raise ImportError(
+            "holographic-chs: 找不到 hermes_constants 模块，"
+            "请确认 Hermes Agent 已正确安装"
+        ) from None
+
     config_path = get_hermes_home() / "config.yaml"
     if not config_path.exists():
         return {}
     import yaml
     try:
-        with open(config_path) as f:
+        with open(config_path, encoding="utf-8-sig") as f:
             all_config = yaml.safe_load(f) or {}
         return all_config.get("plugins", {}).get("hermes-memory-store", {}) or {}
     except yaml.YAMLError:
