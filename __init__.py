@@ -266,6 +266,19 @@ class CustomHolographicProvider(HolographicMemoryProvider):
         super().initialize(session_id, **kwargs)
         logger.info("holographic-chs: initialized (trigram patched)")
 
+    def on_memory_write(self, action, target, content, metadata=None):  # Override super().on_memory_write to handle "remove" and "replace" actions
+        if not self._store or not content:  # Same as parent class
+            return
+        category = "user_pref" if target == "user" else "general"
+        if action == "remove":
+            fact_id = self._store.add_fact(content, category=category)  # if fact already exists, add_fact returns old fact_id, else it creates a new fact and returns its id
+            return self._store.remove_fact(fact_id)
+        if action == "replace":
+            old_text = metadata.get("old_text") if metadata else None
+            if old_text:
+                fact_id = self._store.add_fact(old_text, category=category)
+                return self._store.update_fact(fact_id, content=content)
+        return super().on_memory_write(action, target, content)  # Other action such as "add" will be handled by the parent class
 
 # ── Plugin entry point ──────────────────────────────────────────────
 

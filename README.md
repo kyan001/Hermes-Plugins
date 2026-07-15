@@ -23,11 +23,27 @@ Restart the gateway (or CLI session):
 hermes gateway restart
 ```
 
+Update (if needed):
+
+```bash
+hermes plugins update holographic-chs
+```
+
 ## What It Does
 
 Patches Hermes' built-in `HolographicMemoryProvider` so FTS5 uses `tokenize='trigram'` instead of the default `unicode61` tokenizer. This makes Chinese text searchable character by character.
 
 Without this plugin, a query like `冰黑咖啡` returns zero results against a memory containing `冰的黑咖啡` — the default tokenizer splits on whitespace/punctuation only, so Chinese text is indexed as one giant token. With trigram, both strings decompose into overlapping 3-char substrings (`冰黑咖` / `的黑咖` / `黑咖啡`) and match.
+
+## Memory Write Mirroring
+
+Mirrors the built-in `memory` tool operations to fact_store:
+
+- `add`: passes through to the parent class, no change.
+- `replace`: finds the old fact via `old_text` → `update_fact` to update the content, keeping the same `fact_id`.
+- `remove`: finds the fact by exact content match → `remove_fact` to delete it.
+
+The built-in deduplication in `add_fact` (UNIQUE content constraint) substitutes for the missing content-to-fact_id lookup. `replace` / `remove` only handle known operations; unknown ops fall through to the parent class without interfering with upper-layer behavior.
 
 ## Search Strategy
 
@@ -40,16 +56,10 @@ Two-phase fallback for maximum recall:
 
 ## Files
 
-```
+```TOML
 holographic-chs/
 ├── plugin.yaml       # Hermes plugin metadata
 └── __init__.py       # register(ctx) + implementation
 ```
 
 No dependencies beyond Hermes itself. The plugin subclasses the bundled `HolographicMemoryProvider` and applies monkey-patches at initialization time.
-
-## Updates
-
-```bash
-hermes plugins update holographic-chs
-```
