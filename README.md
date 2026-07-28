@@ -1,65 +1,91 @@
-# Holographic-CHS (AIGC)
+# Hermes Plugins (AIGC)
 
-**English** | [中文](README.zh-CN.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) | **English** | [中文](README.zh-CN.md)
 
-Chinese trigram FTS5 for [Hermes Agent](https://hermes-agent.nousresearch.com) memory. Drops in as a memory provider plugin.
+A collection of plug-and-play plugins for [Hermes Agent](https://hermes-agent.nousresearch.com). Maintained by [Kyan](https://github.com/kyan001).
 
-## Quick Install
+## Overview
 
-```bash
-hermes plugins install kyan001/Holographic-CHS --enable
+This repository hosts a set of plugins designed for [Hermes Agent](https://hermes-agent.nousresearch.com), installable via `hermes plugins install` with a single command. All plugins share the same design philosophy:
+
+- **Plug and play** — Subclass Hermes built-in classes, minimal intrusiveness
+- **Zero / minimal dependencies** — Leverage Hermes' existing runtime environment
+- **Configuration-driven** — Switch providers with a single line in `config.yaml`
+- **MIT License** — Free to use and modify
+
+## Plugin List
+
+| Plugin | Version | Type | Description |
+|--------|---------|------|-------------|
+| [Defuddle](./Defuddle/) | 1.0.0 | Web Extract Provider | Local web page content extraction, no API key required, powered by Defuddle CLI |
+| [Holographic-CHS](./Holographic-CHS/) | 2.1.1 | Memory Provider | Chinese trigram FTS5 support, solves Chinese memory retrieval issues |
+
+## Quick Start
+
+### Install a Plugin
+
+```Shell
+# Via CLI
+hermes plugins install kyan001/Hermes-Plugins/${PluginName} --enable
+
+# Or via Dashboard
+# https://hermes.kyan001.com/plugins
 ```
 
-Then set it in `~/.hermes/config.yaml`:
+### Configure
+
+Set the corresponding provider in Hermes config file `${HERMES_HOME}/config.yaml`:
 
 ```yaml
+# Example: Use Defuddle as web extraction backend
+web:
+  extract_backend: defuddle
+
+# Example: Use Holographic-CHS as memory backend
 memory:
   provider: holographic-chs
 ```
 
-Restart the gateway (or CLI session):
+### Restart to Apply
 
-```bash
+```Shell
 hermes gateway restart
+# Or execute /restart in session
 ```
 
-Update (if needed):
+### Update a Plugin
 
-```bash
-hermes plugins update holographic-chs
+```Shell
+hermes plugins update ${PluginName}
 ```
 
-## What It Does
+## Common File Structure
 
-Patches Hermes' built-in `HolographicMemoryProvider` so FTS5 uses `tokenize='trigram'` instead of the default `unicode61` tokenizer. This makes Chinese text searchable character by character.
+Each plugin consists of two core files:
 
-Without this plugin, a query like `冰黑咖啡` returns zero results against a memory containing `冰的黑咖啡` — the default tokenizer splits on whitespace/punctuation only, so Chinese text is indexed as one giant token. With trigram, both strings decompose into overlapping 3-char substrings (`冰黑咖` / `的黑咖` / `黑咖啡`) and match.
-
-## Memory Write Mirroring
-
-Mirrors the built-in `memory` tool operations to fact_store:
-
-- `add`: passes through to the parent class, no change.
-- `replace`: finds the old fact via `old_text` → `update_fact` to update the content, keeping the same `fact_id`.
-- `remove`: finds the fact by exact content match → `remove_fact` to delete it.
-
-The built-in deduplication in `add_fact` (UNIQUE content constraint) substitutes for the missing content-to-fact_id lookup. `replace` / `remove` only handle known operations; unknown ops fall through to the parent class without interfering with upper-layer behavior.
-
-## Search Strategy
-
-Two-phase fallback for maximum recall:
-
-1. **FTS5 AND (default)** — exact trigram match
-2. **Trigram OR expansion** — retry with OR-joined trigrams when FTS5 returns empty (≥4 char queries only). Multi-word stop words (509 entries) stripped before expansion to reduce noise
-
-> **Known limitation**: The trigram tokenizer requires at least 3 characters to produce index entries. Queries shorter than 3 characters (e.g. `咖啡`, `北京`) will not match any FTS5 rows. A LIKE fallback is intentionally omitted — single-character searches yield too much noise to be useful, and 2-character queries are rare in real-world agent usage.
-
-## Files
-
-```TOML
-holographic-chs/
-├── plugin.yaml       # Hermes plugin metadata
+```
+plugin-name/
+├── plugin.yaml       # Hermes plugin metadata (name, version, description, author)
 └── __init__.py       # register(ctx) + implementation
 ```
 
-No dependencies beyond Hermes itself. The plugin subclasses the bundled `HolographicMemoryProvider` and applies monkey-patches at initialization time.
+### `plugin.yaml`
+
+Declares plugin metadata including `name`, `version`, `description`, `author`, and the provider type it offers.
+
+### `__init__.py`
+
+Contains the `register(ctx)` entry point and implementation logic. Implements by subclassing Hermes' built-in Provider base class and overriding key methods, registering at initialization time.
+
+## Design Patterns
+
+Plugins in this repository commonly follow these patterns:
+
+1. **Subclassing** — Inherit from Hermes built-in Provider base classes (e.g., `WebSearchProvider`, `HolographicMemoryProvider`)
+2. **Monkey-patch (optional)** — Apply targeted patches to core modules at initialization time to minimize code intrusiveness
+3. **Configuration as switching** — Enable provider hot-swapping via `plugin.yaml` + `config.yaml`
+4. **Zero external dependencies first** — Prefer leveraging Hermes' built-in runtime (e.g., Node.js/npm/npx)
+
+## License
+
+[MIT](LICENSE) © 2026 Kyan

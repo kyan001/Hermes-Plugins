@@ -1,0 +1,7 @@
+name: defuddle-for-hermes
+version: 1.0.0
+description: "Defuddle web content extraction — local, no API key required. Extracts clean content from web pages using the Defuddle CLI (kepano/defuddle)."
+author: Kyan
+kind: backend
+provides_web_providers:
+  - defuddle
