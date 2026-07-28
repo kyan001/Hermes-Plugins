@@ -15,7 +15,7 @@ Chinese trigram FTS5 for [Hermes Agent](https://hermes-agent.nousresearch.com) m
     1. Install: `hermes plugins install kyan001/Holographic-CHS-for-Hermes --enable`
     2. Set it as your memory provider: `hermes config set memory.provider holographic-chs`
     3. Restart: `hermes gateway restart`
-    * Update: `hermes plugins update holographic-chs-for-hermes`
+    * Update: `hermes plugins update holographic-chs`
 
 ```YAML
 # File: ${HERMES_HOME}/config.yaml
