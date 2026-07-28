@@ -1,4 +1,4 @@
-"""defuddle - Web extraction provider using Defuddle CLI.
+"""defuddle-for-hermes - Web extraction provider using Defuddle CLI.
 
 Subclasses :class:`agent.web_search_provider.WebSearchProvider`
 and delegates ``extract()`` to ``npx defuddle parse <url> --json``.

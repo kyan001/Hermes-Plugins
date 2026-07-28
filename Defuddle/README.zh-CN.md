@@ -1,4 +1,4 @@
-# Defuddle (AIGC)
+# Defuddle for Hermes (AIGC)
 
 [English](README.md) | **中文**
 
@@ -10,22 +10,17 @@
 
 ## 快速开始
 
-* 安装：
-    * 推荐通过 Dashboard：<https://hermes.kyan001.com/plugins> @ `kyan001/Hermes-Plugins/Defuddle`
-    * 或通过 CLI：`hermes plugins install kyan001/Hermes-Plugins/Defuddle --enable`
-* 设置为提取后端：
-    * 通过 CLI：`hermes config set web.extract_backend defuddle`
-    * 或通过配置文件：`${HERMES_HOME}/config.yaml`
-
-```YAML
-# 文件：${HERMES_HOME}/config.yaml
-web:
-  search_backend: ...  # 可能是 searxng
-  extract_backend: defuddle  # 设置此项
-```
-* 重启：`/restart` / `hermes gateway restart` / `/new`，之后 `web_extract(urls=[...])` 将在底层使用 Defuddle。
-
-* 更新：`hermes plugins update defuddle-for-hermes`
+* 通过 Dashboard（推荐，插件文件夹的所有权归 Hermes）：
+    1. 安装：<https://${HERMES_DASHBOARD_PUBLIC_URL}/plugins> @ `kyan001/Defuddle-for-Hermes`
+    2. 安装前勾选 "Enable"，或在插件列表中手动启用。
+    3. 在 <https://${HERMES_DASHBOARD_PUBLIC_URL}/config> - Web - Extract Backend 中设置为 `defuddle`。
+    4. 重启：`/restart` 或 `/new`，之后 `web_extract(urls=[...])` 将在底层使用 Defuddle。
+    * 更新：点击插件列表中的 "Git Pull"。
+* 通过 Hermes CLI：
+    1. 安装：`hermes plugins install kyan001/Defuddle-for-Hermes --enable`
+    2. 设置为网页提取后端：`hermes config set web.extract_backend defuddle`
+    3. 重启：`hermes gateway restart`
+    * 更新：`hermes plugins update defuddle`
 
 ## 系统要求
 

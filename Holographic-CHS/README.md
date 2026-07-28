@@ -1,25 +1,27 @@
-# Holographic-CHS (AIGC)
+# Holographic-CHS for Hermes (AIGC)
 
 **English** | [中文](README.zh-CN.md)
 
 Chinese trigram FTS5 for [Hermes Agent](https://hermes-agent.nousresearch.com) memory. Drops in as a memory provider plugin.
 
 ## Quick Install
-* Install:
-    * Via Dashboard (Recommend): <https://hermes.kyan001.com/plugins> @ `kyan001/Hermes-Plugins/Holographic-CHS`
-    * Or via CLI: `hermes plugins install kyan001/Hermes-Plugins/Holographic-CHS --enable`
-* Set it as your memory provider:
-    * Via Dashboard: <https://hermes.kyan001.com/plugins>
-    * Or via Config File: `${HERMES_HOME}/config.yaml`
+* Via Dashboard: Recommended. The plugin folder will be owned by Hermes.
+    1. Install: <https://${HERMES_DASHBOARD_PUBLIC_URL}/plugins> @ `kyan001/Holographic-CHS-for-Hermes`
+    2. Toggle on "Enable" before install or enable it manually in the plugin list.
+    3. Set it as your memory provider in the same Dashboard Plugins page.
+    4. Restart: `/restart` or `/new`
+    * Update: Click "Git Pull" on the plugin item in the list.
+* Via Hermes CLI:
+    1. Install: `hermes plugins install kyan001/Holographic-CHS-for-Hermes --enable`
+    2. Set it as your memory provider: `hermes config set memory.provider holographic-chs`
+    3. Restart: `hermes gateway restart`
+    * Update: `hermes plugins update holographic-chs-for-hermes`
 
 ```YAML
+# File: ${HERMES_HOME}/config.yaml
 memory:
   provider: holographic-chs
 ```
-
-* Restart: `/restart` / `hermes gateway restart` / `/new` and `web_extract(urls=[...])` will use Defuddle under the hood.
-
-* Update: `hermes plugins update holographic-chs`
 
 ## What It Does
 
@@ -49,7 +51,7 @@ Two-phase fallback for maximum recall:
 ## Files
 
 ```TOML
-holographic-chs/
+Holographic-CHS-for-Hermes/
 ├── plugin.yaml       # Hermes plugin metadata
 └── __init__.py       # register(ctx) + implementation
 ```

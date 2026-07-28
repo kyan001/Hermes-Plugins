@@ -292,9 +292,7 @@ def _load_plugin_config() -> dict:
     try:
         from hermes_constants import get_hermes_home
     except ImportError:
-        raise ImportError(
-            "holographic-chs: 找不到 hermes_constants 模块，"
-            "请确认 Hermes Agent 已正确安装"
+        raise ImportError("holographic-chs: Cannot locate hermes_constants module, please comfirm that Hermes Agent is installed."
         ) from None
 
     config_path = get_hermes_home() / "config.yaml"
@@ -306,9 +304,9 @@ def _load_plugin_config() -> dict:
             all_config = yaml.safe_load(f) or {}
         return all_config.get("plugins", {}).get("hermes-memory-store", {}) or {}
     except yaml.YAMLError:
-        logger.warning("holographic-chs: config.yaml 解析失败 — 使用默认设置")
+        logger.warning("holographic-chs: config.yaml parse failed. Use default config.")
     except OSError:
-        logger.warning("holographic-chs: config.yaml 读取失败 — 使用默认设置")
+        logger.warning("holographic-chs: config.yaml read failed. Use default config.")
     except Exception:
-        logger.warning("holographic-chs: 读取插件配置出错 — 使用默认设置", exc_info=True)
+        logger.warning("holographic-chs: read plugins config failed. Use default config.", exc_info=True)
     return {}

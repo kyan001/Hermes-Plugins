@@ -10,22 +10,17 @@ Extracts clean json from web pages using the Defuddle CLI.
 
 ## Quick Start
 
-* Install:
-    * Via Dashboard (Recommand): <https://hermes.kyan001.com/plugins> @ `kyan001/Hermes-Plugins/Defuddle`
-    * Or via CLI: `hermes plugins install kyan001/Hermes-Plugins/Defuddle --enable`
-* Set it as your extract backend:
-    * Via CLI: `hermes config set web.extract_backend defuddle`
-    * Or via Config File: `${HERMES_HOME}/config.yaml`
-
-```YAML
-# File: ${HERMES_HOME}/config.yaml
-web:
-  search_backend: ...  # Might be searxng
-  extract_backend: defuddle  # Set this
-```
-* Restart: `/restart` / `hermes gateway restart` / `/new` and `web_extract(urls=[...])` will use Defuddle under the hood.
-
-* Update: `hermes plugins update defuddle`
+* Via Dashboard: Recommended. The plugin folder will be owned by Hermes.
+    1. Install: <https://${HERMES_DASHBOARD_PUBLIC_URL}/plugins> @ `kyan001/Defuddle-for-Hermes`
+    2. Toggle on "Enable" before install or enable it manually in the plugin list.
+    3. Set it as your web extract backend on the <https://${HERMES_DASHBOARD_PUBLIC_URL}/config> - Web - Extract Backend: `defuddle`.
+    4. Restart: `/restart` or `/new` and `web_extract(urls=[...])` will use Defuddle under the hood.
+    * Update: Click "Git Pull" on the plugin item in the list.
+* Via Hermes CLI:
+    1. Install: `hermes plugins install kyan001/Defuddle-for-Hermes --enable`
+    2. Set it as your web extract backend: `hermes config set web.extract_backend defuddle`
+    3. Restart: `hermes gateway restart`
+    * Update: `hermes plugins update defuddle`
 
 ## Requirements
 
