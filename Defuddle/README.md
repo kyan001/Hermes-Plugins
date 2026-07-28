@@ -11,8 +11,8 @@ Extracts clean json from web pages using the Defuddle CLI.
 ## Quick Start
 
 * Install:
-    * Via Dashboard (Recommand): <https://hermes.kyan001.com/plugins> @ `kyan001/Hermes-Plugins/Defuddle-for-Hermes`
-    * Or via CLI: `hermes plugins install kyan001/Hermes-Plugins/Defuddle-for-Hermes --enable`
+    * Via Dashboard (Recommand): <https://hermes.kyan001.com/plugins> @ `kyan001/Hermes-Plugins/Defuddle`
+    * Or via CLI: `hermes plugins install kyan001/Hermes-Plugins/Defuddle --enable`
 * Set it as your extract backend:
     * Via CLI: `hermes config set web.extract_backend defuddle`
     * Or via Config File: `${HERMES_HOME}/config.yaml`
@@ -25,7 +25,7 @@ web:
 ```
 * Restart: `/restart` / `hermes gateway restart` / `/new` and `web_extract(urls=[...])` will use Defuddle under the hood.
 
-* Update: `hermes plugins update defuddle-for-hermes`
+* Update: `hermes plugins update defuddle`
 
 ## Requirements
 
@@ -66,7 +66,7 @@ Each URL returns:
 ## File Structure
 
 ```Shell
-Defuddle-for-Hermes/
+Defuddle/
 ├── __init__.py    # DefuddleExtractProvider + register()
 └── plugin.yaml    # Plugin manifest
 ```

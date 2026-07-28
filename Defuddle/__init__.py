@@ -1,9 +1,9 @@
-"""defuddle-for-hermes — Web extraction provider using Defuddle CLI.
+"""defuddle - Web extraction provider using Defuddle CLI.
 
 Subclasses :class:`agent.web_search_provider.WebSearchProvider`
 and delegates ``extract()`` to ``npx defuddle parse <url> --json``.
 
-No API key needed — just Node.js and npm (which Heremes already has).
+No API key needed - just Node.js and npm (which Heremes already has).
 """
 import json
 import logging

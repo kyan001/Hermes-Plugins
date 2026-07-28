@@ -1,4 +1,4 @@
-# Defuddle for Hermes (AIGC)
+# Defuddle (AIGC)
 
 [English](README.md) | **中文**
 
@@ -11,8 +11,8 @@
 ## 快速开始
 
 * 安装：
-    * 推荐通过 Dashboard：<https://hermes.kyan001.com/plugins> @ `kyan001/Hermes-Plugins/Defuddle-for-Hermes`
-    * 或通过 CLI：`hermes plugins install kyan001/Hermes-Plugins/Defuddle-for-Hermes --enable`
+    * 推荐通过 Dashboard：<https://hermes.kyan001.com/plugins> @ `kyan001/Hermes-Plugins/Defuddle`
+    * 或通过 CLI：`hermes plugins install kyan001/Hermes-Plugins/Defuddle --enable`
 * 设置为提取后端：
     * 通过 CLI：`hermes config set web.extract_backend defuddle`
     * 或通过配置文件：`${HERMES_HOME}/config.yaml`
@@ -66,7 +66,7 @@ web:
 ## 文件结构
 
 ```Shell
-Defuddle-for-Hermes/
+Defuddle/
 ├── __init__.py    # DefuddleExtractProvider + register()
 └── plugin.yaml    # 插件清单
 ```
