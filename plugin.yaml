@@ -1,4 +1,4 @@
 name: holographic-chs
 description: Holographic Memory Provider with Chinese trigram FTS5 support for Hermes Agent.
 author: Kyan
-version: 2.1.2
+version: 2.1.3

@@ -5,6 +5,7 @@
 Chinese trigram FTS5 for [Hermes Agent](https://hermes-agent.nousresearch.com) memory. Drops in as a memory provider plugin.
 
 ## Quick Install
+
 * Via Dashboard: Recommended. The plugin folder will be owned by Hermes.
     1. Install: <https://${HERMES_DASHBOARD_PUBLIC_URL}/plugins> @ `kyan001/Holographic-CHS-for-Hermes`
     2. Toggle on "Enable" before install or enable it manually in the plugin list.

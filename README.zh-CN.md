@@ -9,14 +9,14 @@
 * 通过 Dashboard（推荐，插件文件夹的所有权归 Hermes）：
     1. 安装：<https://${HERMES_DASHBOARD_PUBLIC_URL}/plugins> @ `kyan001/Holographic-CHS-for-Hermes`
     2. 安装前勾选 "Enable"，或在插件列表中手动启用。
-    3. 在同一 Dashboard 插件页面中设置为 memory provider。
+    3. 在同一 Dashboard 插件页面中设置为 Memory Provider。
     4. 重启：`/restart` 或 `/new`
     * 更新：点击插件列表中的 "Git Pull"。
 * 通过 Hermes CLI：
     1. 安装：`hermes plugins install kyan001/Holographic-CHS-for-Hermes --enable`
     2. 设置为记忆后端：`hermes config set memory.provider holographic-chs`
     3. 重启：`hermes gateway restart`
-    * 更新：`hermes plugins update holographic-chs-for-hermes`
+    * 更新：`hermes plugins update holographic-chs`
 
 ```YAML
 # 文件：${HERMES_HOME}/config.yaml
