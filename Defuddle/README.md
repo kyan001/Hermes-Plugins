@@ -20,7 +20,7 @@ Extracts clean json from web pages using the Defuddle CLI.
     1. Install: `hermes plugins install kyan001/Defuddle-for-Hermes --enable`
     2. Set it as your web extract backend: `hermes config set web.extract_backend defuddle`
     3. Restart: `hermes gateway restart`
-    * Update: `hermes plugins update defuddle`
+    * Update: `hermes plugins update defuddle-for-hermes`
 
 ## Requirements
 
@@ -61,7 +61,7 @@ Each URL returns:
 ## File Structure
 
 ```Shell
-Defuddle/
+Defuddle-for-Hermes/
 ├── __init__.py    # DefuddleExtractProvider + register()
 └── plugin.yaml    # Plugin manifest
 ```
